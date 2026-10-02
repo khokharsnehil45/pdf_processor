@@ -56,22 +56,28 @@ chrono = { version = "0.4", features = ["serde"] }
 
 ## 🛠️ How to Run
 
-### Option 1: Global CLI Command (Run Anywhere)
-Once installed, simply type:
+### Option 1: Direct Pipe into AI LLMs (e.g. Ollama)
+```bash
+# Pipe structured JSON directly into Ollama
+PDFL -load document.pdf -json | ollama run llama3.2:3b "Summarize this document:"
+
+# Pipe with quiet mode (clean stdout only)
+PDFL -load document.pdf -json -q | jq .metadata
+```
+
+### Option 2: Global CLI Command (Interactive Mode)
 ```bash
 PDFL
 ```
 *(or `pdfl`)* from any terminal/directory in the system.
 
-### Option 2: Running with Cargo
+### Option 3: Command Line Flags
 ```bash
-cargo run --release
-```
-
-### Interactive Usage
-```text
-👉 Step 1: Enter source PDF path: documents/sample.pdf
-👉 Step 2: Enter destination path (Press Enter for 'output.json'): output.json
+PDFL -load <file_path> -json              # Stream structured JSON to stdout
+PDFL -load <file_path> -jsonl             # Stream JSON Lines to stdout
+PDFL -load <file_path> -text              # Stream plain text to stdout
+PDFL -load <file_path> -o <output_file>   # Save to .json, .jsonl, or .txt
+PDFL -load <file_path> -json -q           # Quiet mode (silences stderr logs)
 ```
 
 ## 📄 License

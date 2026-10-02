@@ -4,10 +4,14 @@ use rayon::prelude::*;
 
 /// Extracts text from PDF pages concurrently across multiple CPU cores
 /// and returns the ordered results `Vec<(page_number, text)>`.
-pub fn extract_pages_parallel<P: AsRef<Path>>(source_path: P) -> Result<Vec<(u32, String)>, String> {
+/// Diagnostic/progress messages are written to stderr so stdout remains clean for piping.
+pub fn extract_pages_parallel<P: AsRef<Path>>(source_path: P, quiet: bool) -> Result<Vec<(u32, String)>, String> {
     let path_ref = source_path.as_ref();
 
-    println!("   ⚙️  Loading PDF document into memory...");
+    if !quiet {
+        eprintln!("   ⚙️  Loading PDF document into memory...");
+    }
+
     let mut doc = pdf_extract::Document::load(path_ref)
         .map_err(|e| format!("Failed to load PDF document: {}", e))?;
 
@@ -22,7 +26,9 @@ pub fn extract_pages_parallel<P: AsRef<Path>>(source_path: P) -> Result<Vec<(u32
     }
 
     let num_threads = rayon::current_num_threads();
-    println!("   ⚡ Dispatching {} pages across {} CPU worker threads...", total_pages, num_threads);
+    if !quiet {
+        eprintln!("   ⚡ Dispatching {} pages across {} CPU worker threads...", total_pages, num_threads);
+    }
 
     let page_numbers: Vec<u32> = pages.keys().copied().collect();
     let completed_counter = AtomicUsize::new(0);
@@ -39,13 +45,15 @@ pub fn extract_pages_parallel<P: AsRef<Path>>(source_path: P) -> Result<Vec<(u32
             }
 
             let done = completed_counter.fetch_add(1, Ordering::Relaxed) + 1;
-            println!("   -> [Thread {:?}] Extracted page {}/{} (Progress: {}/{})",
-                std::thread::current().id(),
-                page_num,
-                total_pages,
-                done,
-                total_pages
-            );
+            if !quiet {
+                eprintln!("   -> [Thread {:?}] Extracted page {}/{} (Progress: {}/{})",
+                    std::thread::current().id(),
+                    page_num,
+                    total_pages,
+                    done,
+                    total_pages
+                );
+            }
 
             Ok((page_num, page_text))
         })
