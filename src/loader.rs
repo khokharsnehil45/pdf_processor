@@ -1,17 +1,10 @@
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use rayon::prelude::*;
 
-pub struct ProcessStats {
-    pub total_pages: usize,
-    pub bytes_written: usize,
-}
-
 /// Extracts text from PDF pages concurrently across multiple CPU cores
-/// and streams the in-order results to the target file.
-pub fn stream_pdf_to_file<P: AsRef<Path>>(source_path: P, dest_file: &mut File) -> Result<ProcessStats, String> {
+/// and returns the ordered results `Vec<(page_number, text)>`.
+pub fn extract_pages_parallel<P: AsRef<Path>>(source_path: P) -> Result<Vec<(u32, String)>, String> {
     let path_ref = source_path.as_ref();
 
     println!("   ⚙️  Loading PDF document into memory...");
@@ -58,22 +51,5 @@ pub fn stream_pdf_to_file<P: AsRef<Path>>(source_path: P, dest_file: &mut File) 
         })
         .collect();
 
-    let extracted_pages = extracted_pages?;
-
-    println!("   💾 Writing all {} extracted pages to disk in strict sequential order...", total_pages);
-    let mut total_bytes = 0;
-    for (page_num, page_text) in extracted_pages {
-        let bytes = page_text.as_bytes();
-        dest_file
-            .write_all(bytes)
-            .map_err(|e| format!("Failed to write page {} to disk: {}", page_num, e))?;
-        total_bytes += bytes.len();
-    }
-
-    dest_file.flush().map_err(|e| format!("Flush error: {}", e))?;
-
-    Ok(ProcessStats {
-        total_pages,
-        bytes_written: total_bytes,
-    })
+    extracted_pages
 }
