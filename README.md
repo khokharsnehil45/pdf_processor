@@ -56,16 +56,23 @@ chrono = { version = "0.4", features = ["serde"] }
 
 ## 🛠️ How to Run
 
-1. Open your terminal in the project directory.
-2. Run the application:
-   ```bash
-   cargo run --release
-   ```
-3. Enter your PDF path and destination file (defaults to `output.json`):
-   ```text
-   👉 Step 1: Enter source PDF path: documents/sample.pdf
-   👉 Step 2: Enter destination path (Press Enter for 'output.json'): output.json
-   ```
+### Option 1: Global CLI Command (Run Anywhere)
+Once installed, simply type:
+```bash
+PDFL
+```
+*(or `pdfl`)* from any terminal/directory in the system.
+
+### Option 2: Running with Cargo
+```bash
+cargo run --release
+```
+
+### Interactive Usage
+```text
+👉 Step 1: Enter source PDF path: documents/sample.pdf
+👉 Step 2: Enter destination path (Press Enter for 'output.json'): output.json
+```
 
 ## 📄 License
 This project is open-source and available under the MIT License.
