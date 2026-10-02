@@ -1,95 +1,50 @@
-# PDF Text Extractor CLI
+# Streaming PDF Text Extractor
 
-A lightweight, modular **command-line interface (CLI) tool** built in **Rust** that extracts raw text content from PDF documents and saves it directly to a local file. 
+A high-performance, single-threaded command-line interface (CLI) tool built in Rust that extracts text content from PDF files and saves it to a local text file. 
 
-This project demonstrates a clean, component-based architecture separation between file I/O operations and user interaction loops.
+## 🚀 Key Feature: On-The-Fly Streaming
+Unlike naive tools that load the entire PDF file and all extracted text into your system's RAM at once, this tool uses a **page-by-page streaming architecture**. 
 
----
+* **Constant Memory Footprint:** The application processes text one page at a time. Whether your PDF is 5 pages or 5,000 pages, the RAM usage remains incredibly low and steady.
+* **On-the-Fly Unloading:** As soon as a page's text is extracted, it is instantly streamed and written directly to your hard drive/SSD before moving to the next page.
+* **Real-time Feedback:** Provides instant step-by-step console logging as each page streams.
 
-## 🚀 Features
-
-* 🖥️ **Interactive CLI:** A simple terminal interface that prompts users for input and destination paths.
-* 📦 **Modular Architecture:** Split into isolated components for robust maintenance:
-  * `loader.rs` handles reading the binary bytes and safely extracting text.
-  * `unloader.rs` manages file creation, automated directory nesting, and disk writes.
-  * `main.rs` orchestrates the CLI application flow.
-* 💾 **Smart Defaults:** Instantly falls back to a default `output.txt` if the user leaves the destination prompt blank.
-* 📁 **Auto-Folder Creation:** Automatically generates nested directory paths if the specified destination directory does not exist yet.
-
----
-
-## 🛠️ Project Structure
-
-```text
-pdf_processor/
-├── Cargo.toml
-└── src/
-    ├── main.rs        # CLI UI and Execution Coordinator
-    ├── loader.rs      # PDF Ingestion Component
-    └── unloader.rs    # File Export Component
-```
-
----
+## 🏗️ Architecture Blueprint
+The system is divided into three clean modules to separate concerns:
+* `src/main.rs`: Orchestrates the CLI interface, handles user path inputs, and coordinates the processing pipeline.
+* `src/loader.rs`: Opens the PDF layout structurally and drives the sequential page extraction loop.
+* `src/unloader.rs`: Safely initializes, overwrites, and handles the low-level physical file handles on disk.
 
 ## 📋 Prerequisites
+Ensure you have the Rust toolchain installed. If not, get it from [rustup.rs](https://rustup.rs).
 
-To build and run this project, make sure you have the Rust toolchain installed:
-
-```bash
-# Verify Rust installation
-cargo --version
+This project depends on the `pdf-extract` crate. Make sure your `Cargo.toml` contains:
+```toml
+[dependencies]
+pdf-extract = "0.7" # Or your currently targeted version
 ```
 
----
+## 🛠️ How to Run
 
-## ⚙️ Installation & Setup
-
-1. **Clone or locate your project directory:**
+1. Open your terminal in the project directory.
+2. Run the application using Cargo:
    ```bash
-   cd pdf_processor
+   cargo run
+   ```
+3. Follow the interactive CLI prompts:
+   ```text
+   === Streaming PDF Text Extractor ===
+   Enter the path to the source PDF file: documents/sample.pdf
+   Enter destination file path (Press Enter for default: 'output.txt'): exports/result.txt
+
+   Preparing destination file...
+   Streaming text page-by-page from PDF to disk...
+      -> Streamed page 1 successfully
+      -> Streamed page 2 successfully
+      -> Streamed page 3 successfully
+
+   🎉 Success! Entire PDF streamed and saved to 'exports/result.txt'.
    ```
 
-2. **Verify your `Cargo.toml` dependencies:**
-   Ensure your `Cargo.toml` file includes the `pdf-extract` crate:
-   ```toml
-   [dependencies]
-   pdf-extract = "0.7.0"
-   ```
-
-3. **Build the project:**
-   ```bash
-   cargo build --release
-   ```
-
----
-
-## 📖 Usage
-
-Run the tool using `cargo`:
-
-```bash
-cargo run
-```
-
-### Example Walkthrough
-
-```text
-=== PDF Text Extractor CLI ===
-Enter the path to the source PDF file: /path/to/my_document.pdf
-Enter destination file path (Press Enter for default: 'output.txt'): exports/result.txt
-
-[1/2] Loading and extracting PDF contents...
-[2/2] Saving extracted text to 'exports/result.txt'...
-
-🎉 Success! Content successfully processed and saved.
-```
-
----
-
-## 🧩 Components Deep Dive
-
-### 1. Loader (`src/loader.rs`)
-Reads the file paths provided by the orchestrator, loads the raw binary structure into an in-memory buffer, and uses the `pdf-extract` engine to synthesize string sequences.
-
-### 2. Unloader (`src/unloader.rs`)
-Safeguards the data saving process. It queries the operating system for directory structures, provisions lacking folders on demand, and cleanly overwrites or produces the resulting plain-text file.
+## 📄 License
+This project is open-source and available under the MIT License.
