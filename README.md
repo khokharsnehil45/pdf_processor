@@ -1,27 +1,27 @@
-# Streaming PDF Text Extractor
+# Multi-Core PDF Text Extractor
 
-A high-performance, single-threaded command-line interface (CLI) tool built in Rust that extracts text content from PDF files and saves it to a local text file. 
+A high-performance command-line interface (CLI) tool built in Rust that extracts text content from PDF files across multiple CPU cores in parallel and saves the ordered text to a local file.
 
-## 🚀 Key Feature: On-The-Fly Streaming
-Unlike naive tools that load the entire PDF file and all extracted text into your system's RAM at once, this tool uses a **page-by-page streaming architecture**. 
+## 🚀 Key Features
 
-* **Constant Memory Footprint:** The application processes text one page at a time. Whether your PDF is 5 pages or 5,000 pages, the RAM usage remains incredibly low and steady.
-* **On-the-Fly Unloading:** As soon as a page's text is extracted, it is instantly streamed and written directly to your hard drive/SSD before moving to the next page.
-* **Real-time Feedback:** Provides instant step-by-step console logging as each page streams.
+* **Multi-Core Parallel Extraction:** Uses `rayon` to extract pages simultaneously across all available CPU threads while preserving strict sequential page order in the output.
+* **Low-Latency Streaming:** Streams extracted text straight to disk without keeping unnecessary file buffers.
+* **Real-time Pipeline Metrics:** Displays live per-thread extraction progress, total processing time, speed per page (ms/page), and data written.
 
 ## 🏗️ Architecture Blueprint
-The system is divided into three clean modules to separate concerns:
-* `src/main.rs`: Orchestrates the CLI interface, handles user path inputs, and coordinates the processing pipeline.
-* `src/loader.rs`: Opens the PDF layout structurally and drives the sequential page extraction loop.
-* `src/unloader.rs`: Safely initializes, overwrites, and handles the low-level physical file handles on disk.
+The system is divided into clean modules:
+* `src/main.rs`: Orchestrates the interactive CLI interface, captures execution metrics, and coordinates the processing pipeline.
+* `src/loader.rs`: Loads the PDF structure, dispatches pages across the `rayon` thread pool, and collects in-order output.
+* `src/unloader.rs`: Safely initializes, creates directories if needed, and handles the physical file handle on disk.
 
 ## 📋 Prerequisites
-Ensure you have the Rust toolchain installed. If not, get it from [rustup.rs](https://rustup.rs).
+Ensure you have the Rust toolchain installed from [rustup.rs](https://rustup.rs).
 
-This project depends on the `pdf-extract` crate. Make sure your `Cargo.toml` contains:
+Dependencies in `Cargo.toml`:
 ```toml
 [dependencies]
-pdf-extract = "0.7" # Or your currently targeted version
+pdf-extract = "0.7.0"
+rayon = "1.12.0"
 ```
 
 ## 🛠️ How to Run
